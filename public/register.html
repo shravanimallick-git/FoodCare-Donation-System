@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register - Food Donation</title>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background: url('login.png') no-repeat center center/cover;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .register-container {
+      background: rgba(255, 255, 255, 0.97);
+      padding: 28px 20px 20px;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14);
+      width: 95%;
+      max-width: 330px;
+      text-align: center;
+      animation: fadeIn 0.7s ease-in;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .register-container h2 {
+      margin-bottom: 14px;
+      font-size: 2.4rem;
+      font-family: 'Pacifico', cursive;
+      font-weight: 400;
+      background: linear-gradient(135deg, #f58529, #dd2a7b, #8134af, #515bd4);
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: 1px;
+    }
+
+    #register-form {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .register-container input,
+    .register-container select {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
+      border: 1px solid #c4c4c4;
+      border-radius: 7px;
+      font-size: 0.96rem;
+      outline: none;
+      transition: border-color 0.22s;
+      box-sizing: border-box;
+    }
+
+    .register-container input:focus,
+    .register-container select:focus {
+      border-color: #dd2a7b;
+    }
+
+    .register-container button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 7px;
+      background: linear-gradient(135deg, #f58529, #dd2a7b, #8134af, #515bd4);
+      color: #fff;
+      border: none;
+      border-radius: 7px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.25s;
+    }
+
+    .register-container button:hover {
+      opacity: 0.9;
+    }
+
+    .register-container p {
+      margin-top: 12px;
+      font-size: 0.9rem;
+      color: #555;
+    }
+
+    .register-container a {
+      background: linear-gradient(135deg, #f58529, #dd2a7b, #8134af, #515bd4);
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+      -webkit-text-fill-color: transparent;
+      font-weight: 600;
+      text-decoration: none;
+      transition: opacity 0.25s;
+    }
+
+    .register-container a:hover {
+      opacity: 0.7;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(15px);}
+      to { opacity: 1; transform: translateY(0);}
+    }
+
+    @media (max-width: 480px) {
+      .register-container {
+        padding: 15px 4vw 10px;
+        max-width: 96vw;
+      }
+      .register-container h2 {
+        font-size: 1.8rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="register-container">
+    <h2>FoodCare</h2>
+    <form id="register-form">
+      <input type="text" name="name" placeholder="Full Name" required>
+      <input type="email" name="email" placeholder="Email" required>
+      <input type="password" name="password" placeholder="Password" required>
+      <select name="role" id="role" required>
+        <option value="">Select Role</option>
+        <option value="donor">Donor</option>
+        <option value="charity">Charity</option>
+      </select>
+      <div id="charity-fields" style="display:none;">
+        <input type="text" name="address" placeholder="Address">
+        <input type="text" name="certificate" placeholder="Certificate URL">
+      </div>
+      <button type="submit">Register</button>
+    </form>
+    <p>Already have an account? <a href="login.html">Login here</a></p>
+  </div>
+
+  <script>
+    const roleSelect = document.getElementById('role');
+    const charityFields = document.getElementById('charity-fields');
+
+    roleSelect.addEventListener('change', () => {
+      if (roleSelect.value === 'charity') {
+        charityFields.style.display = 'block';
+      } else {
+        charityFields.style.display = 'none';
+        charityFields.querySelectorAll('input').forEach(i => i.value = '');
+      }
+    });
+
+    document.getElementById('register-form').addEventListener('submit', async e => {
+      e.preventDefault();
+      // enable/disable charity inputs correctly
+      if (roleSelect.value !== 'charity') {
+        charityFields.querySelectorAll('input').forEach(input => input.disabled = true);
+      }
+
+      const data = Object.fromEntries(new FormData(e.target));
+
+      // re-enable fields for next time
+      charityFields.querySelectorAll('input').forEach(input => input.disabled = false);
+
+      try {
+        const res = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify(data)
+        });
+
+        const result = await res.json();
+        if (result.success) {
+          alert('Registration successful! Please login.');
+          window.location.href = 'login.html';
+        } else {
+          alert(result.message || 'Registration failed.');
+        }
+      } catch (err) {
+        alert('Error connecting to server.');
+        console.error(err);
+      }
+    });
+  </script>
+</body>
+</html>

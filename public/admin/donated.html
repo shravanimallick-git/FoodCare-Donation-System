@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Panel - Donated Items</title>
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+
+  body {
+    display: flex;
+    min-height: 100vh;
+    background: #f1f5f9;
+    color: #333;
+  }
+
+  /* Sidebar */
+  .sidebar {
+    width: 250px;
+    background: linear-gradient(180deg, #1e3a8a, #3b82f6);
+    color: #fff;
+    padding: 20px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    box-shadow: 4px 0 12px rgba(0,0,0,0.1);
+  }
+
+  .sidebar h3 {
+    margin-bottom: 40px;
+    font-size: 1.6rem;
+    text-align: center;
+    font-weight: bold;
+    letter-spacing: 1px;
+  }
+
+  .sidebar ul {
+    list-style: none;
+  }
+
+  .sidebar ul li {
+    margin: 20px 0;
+  }
+
+  .sidebar ul li a {
+    text-decoration: none;
+    color: #cbd5e1;
+    font-size: 1rem;
+    display: block;
+    padding: 12px 15px;
+    border-radius: 10px;
+    transition: all 0.3s;
+  }
+
+  .sidebar ul li a:hover,
+  .sidebar ul li a.active {
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+    transform: translateX(6px);
+  }
+
+  /* Main content */
+  main {
+    margin-left: 270px;
+    padding: 40px;
+    flex: 1;
+  }
+
+  main h2 {
+    margin-bottom: 25px;
+    font-size: 2rem;
+    font-weight: 600;
+    color: #1e293b;
+  }
+
+  /* Table Styling */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(10px);
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+  }
+
+  thead {
+    background: #2563eb;
+    color: #fff;
+  }
+
+  thead th {
+    padding: 15px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 1rem;
+  }
+
+  tbody td {
+    padding: 14px 16px;
+    border-bottom: 1px solid #e2e8f0;
+    font-size: 0.95rem;
+  }
+
+  tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  tbody tr:hover {
+    background: rgba(37, 99, 235, 0.08);
+    transition: background 0.3s;
+  }
+
+  /* Donated Row Highlight */
+  tbody tr.donated {
+    background: rgba(16, 185, 129, 0.12);
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .sidebar {
+      width: 200px;
+    }
+    main {
+      margin-left: 220px;
+    }
+    table {
+      font-size: 0.9rem;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .sidebar {
+      position: fixed;
+      width: 100%;
+      height: auto;
+      display: flex;
+      justify-content: space-around;
+      padding: 10px;
+    }
+    .sidebar h3 {
+      display: none;
+    }
+    .sidebar ul {
+      display: flex;
+      gap: 10px;
+    }
+    .sidebar ul li {
+      margin: 0;
+    }
+    main {
+      margin: 80px 15px 20px 15px;
+    }
+    table, thead, tbody, th, td, tr {
+      display: block;
+    }
+    thead {
+      display: none;
+    }
+    tbody tr {
+      margin-bottom: 15px;
+      border-radius: 12px;
+      padding: 12px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+      background: white;
+    }
+    tbody td {
+      border: none;
+      padding: 8px 0;
+      font-size: 0.9rem;
+    }
+    tbody td::before {
+      content: attr(data-label);
+      font-weight: bold;
+      display: block;
+      margin-bottom: 5px;
+      color: #2563eb;
+    }
+  }
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <h3>Admin Panel</h3>
+  <ul>
+    <li><a href="dashboard.html">Dashboard</a></li>
+    <li><a href="add.html">Add</a></li>
+    <li><a href="user.html">User Details</a></li>
+    <li><a href="donated.html" class="active">Donated</a></li>
+    <li><a href="donations.html">Donations</a></li>
+    <li><a href="/logout">Logout</a></li>
+  </ul>
+</aside>
+
+<main>
+  <h2>Donated Items</h2>
+  <table id="donated-table">
+    <thead>
+      <tr>
+        <th>Donor Name</th>
+        <th>Charity Name</th>
+        <th>Items</th>
+        <th>Expiry Date</th>
+        <th>Quantity</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</main>
+
+<script>
+
+
+function formatDate(dateString) 
+{
+  if (!dateString) return '';
+  const d = new Date(dateString);
+  const day = String(d.getDate()).padStart(2, '0');
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const year = d.getFullYear();
+  return `${day}-${month}-${year}`;
+}
+
+
+async function loadDonated() {
+  try {
+    const res = await fetch('/api/donations', { credentials: 'include' });
+    const donations = await res.json();
+    const tbody = document.querySelector('#donated-table tbody');
+    tbody.innerHTML = '';
+
+    donations.forEach(d => {
+      if(d.status === 'Donated'){
+        const tr = document.createElement('tr');
+        tr.classList.add('donated');
+        tr.innerHTML = `
+          <td data-label="Donor Name">${d.donorName || (d.donorId?.name || '')}</td>
+          <td data-label="Charity Name">${d.charityName || (d.charityId?.name || '')}</td>
+          <td data-label="Items">${d.items}</td>
+          <td data-label="Expiry Date">${formatDate(d.expiryDate)}</td>
+          <td data-label="Quantity">${d.quantity} ${d.unit || ''}</td>
+          <td data-label="Status">${d.status}</td>
+        `;
+        tbody.appendChild(tr);
+      }
+    });
+  } catch(err) {
+    console.error(err);
+    alert('Failed to load donated items');
+  }
+}
+
+document.addEventListener('DOMContentLoaded', loadDonated);
+</script>
+
+</body>
+</html>

@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manage Users - Admin Panel</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      display: flex;
+      min-height: 100vh;
+      background: #f1f5f9;
+      color: #333;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 250px;
+      background: linear-gradient(180deg, #1e3a8a, #3b82f6);
+      color: #fff;
+      padding: 20px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100vh;
+      box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+    }
+
+    .sidebar h3 {
+      margin-bottom: 40px;
+      font-size: 1.5rem;
+      text-align: center;
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
+
+    .sidebar ul {
+      list-style: none;
+    }
+
+    .sidebar ul li {
+      margin: 20px 0;
+    }
+
+    .sidebar ul li a {
+      text-decoration: none;
+      color: #cbd5e1;
+      font-size: 1rem;
+      display: block;
+      padding: 12px 15px;
+      border-radius: 10px;
+      transition: all 0.3s;
+    }
+
+    .sidebar ul li a:hover,
+    .sidebar ul li a.active {
+      background: rgba(255, 255, 255, 0.15);
+      color: #fff;
+      transform: translateX(6px);
+    }
+
+    /* Main content */
+    main {
+      margin-left: 270px;
+      padding: 40px;
+      flex: 1;
+    }
+
+    main h2 {
+      margin-bottom: 30px;
+      font-size: 2rem;
+      font-weight: 600;
+      color: #1e293b;
+    }
+
+    /* User buttons */
+    .user-buttons {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+
+    .user-buttons button {
+      padding: 12px 20px;
+      font-size: 1rem;
+      font-weight: 500;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      background: linear-gradient(135deg, #2563eb, #3b82f6);
+      box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
+      transition: all 0.3s ease;
+    }
+
+    .user-buttons button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 14px rgba(37, 99, 235, 0.4);
+    }
+
+    /* Form container (modal style) */
+    #user-form-container {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(8px);
+      padding: 30px;
+      width: 350px;
+      border-radius: 18px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+      z-index: 1000;
+    }
+
+    #user-form-container h3 {
+      margin-bottom: 20px;
+      color: #1e3a8a;
+      text-align: center;
+      font-size: 1.4rem;
+    }
+
+    #user-form input {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border: 1px solid #d1d5db;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border 0.3s;
+    }
+
+    #user-form input:focus {
+      border-color: #2563eb;
+      box-shadow: 0 0 6px rgba(37, 99, 235, 0.3);
+    }
+
+    #user-form button {
+      margin-top: 12px;
+      padding: 12px;
+      width: 100%;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    #user-form button[type="submit"] {
+      background: linear-gradient(135deg, #2563eb, #3b82f6);
+      color: #fff;
+      box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
+    }
+
+    #user-form button[type="submit"]:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 14px rgba(37, 99, 235, 0.4);
+    }
+
+    #user-form button[type="button"] {
+      background: #e5e7eb;
+      color: #111827;
+      margin-top: 8px;
+    }
+
+    #user-form button[type="button"]:hover {
+      background: #d1d5db;
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        width: 200px;
+      }
+      main {
+        margin-left: 220px;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .sidebar {
+        position: fixed;
+        width: 100%;
+        height: auto;
+        display: flex;
+        justify-content: space-around;
+        padding: 10px;
+      }
+      .sidebar h3 {
+        display: none;
+      }
+      .sidebar ul {
+        display: flex;
+        gap: 10px;
+      }
+      .sidebar ul li {
+        margin: 0;
+      }
+      main {
+        margin: 80px 15px 20px 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <h3>Admin Panel</h3>
+  <ul>
+    <li><a href="dashboard.html">Dashboard</a></li>
+    <li><a href="add.html" class="active">Add</a></li>
+    <li><a href="user.html">User Details</a></li>
+    <li><a href="donated.html">Donated</a></li>
+    <li><a href="donations.html">Donations</a></li>
+    <li><a href="/logout">Logout</a></li>
+  </ul>
+</aside>
+
+<main>
+  <h2>Manage Users</h2>
+
+  <div class="user-buttons">
+    <button onclick="openUserForm('admin')">Add Admin</button>
+    <button onclick="openUserForm('donor')">Add Donor</button>
+    <button onclick="openUserForm('charity')">Add Charity</button>
+  </div>
+
+  <div id="user-form-container">
+    <h3 id="form-title"></h3>
+    <form id="user-form">
+      <input type="text" name="name" placeholder="Name" required>
+      <input type="email" name="email" placeholder="Email" required>
+      <input type="password" name="password" placeholder="Password" required>
+      <input type="text" name="phone" placeholder="Phone">
+      <input type="text" name="address" placeholder="Address">
+      <input type="text" name="certificate" placeholder="Gov Id Number">
+      <button type="submit">Submit</button>
+      <button type="button" onclick="closeUserForm()">Cancel</button>
+    </form>
+  </div>
+</main>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('user-form');
+
+    // Open form modal
+    window.openUserForm = (role) => {
+      document.getElementById('user-form-container').style.display = 'block';
+      document.getElementById('form-title').innerText = `Add ${role.charAt(0).toUpperCase() + role.slice(1)}`;
+      form.dataset.role = role;
+    };
+
+    // Close form modal
+    window.closeUserForm = () => {
+      document.getElementById('user-form-container').style.display = 'none';
+      form.reset();
+    };
+
+    // Submit form
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const role = form.dataset.role;
+      if(!role){ alert('Please select a role first!'); return; }
+
+      const data = Object.fromEntries(new FormData(form));
+      data.role = role;
+
+      try {
+        const res = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify(data)
+        });
+
+        const result = await res.json();
+        if(result.success){
+          alert(`${role.charAt(0).toUpperCase() + role.slice(1)} added successfully!`);
+          closeUserForm();
+          loadUsers();
+        } else {
+          alert(result.message || 'Failed to add user');
+        }
+      } catch(err){
+        console.error(err);
+        alert('Error adding user');
+      }
+    });
+
+    loadUsers(); // Initial load
+  });
+</script>
+</body>
+</html>

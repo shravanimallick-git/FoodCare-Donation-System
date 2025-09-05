@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel - User Details</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      display: flex;
+      min-height: 100vh;
+      background: #f1f5f9;
+      color: #333;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 250px;
+      background: linear-gradient(180deg, #1e3a8a, #3b82f6);
+      color: #fff;
+      padding: 20px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100vh;
+      box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+    }
+
+    .sidebar h3 {
+      margin-bottom: 40px;
+      font-size: 1.5rem;
+      text-align: center;
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
+
+    .sidebar ul {
+      list-style: none;
+    }
+
+    .sidebar ul li {
+      margin: 20px 0;
+    }
+
+    .sidebar ul li a {
+      text-decoration: none;
+      color: #cbd5e1;
+      font-size: 1rem;
+      display: block;
+      padding: 12px 15px;
+      border-radius: 10px;
+      transition: all 0.3s;
+    }
+
+    .sidebar ul li a:hover,
+    .sidebar ul li a.active {
+      background: rgba(255, 255, 255, 0.15);
+      color: #fff;
+      transform: translateX(6px);
+    }
+
+    /* Main content */
+    main {
+      margin-left: 270px;
+      padding: 40px;
+      flex: 1;
+    }
+
+    main h2 {
+      margin: 30px 0 15px;
+      font-size: 1.6rem;
+      font-weight: 600;
+      color: #1e293b;
+    }
+
+    /* Table styling */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 40px;
+      background: #fff;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+
+    table thead {
+      background: #2563eb;
+      color: #fff;
+    }
+
+    table th,
+    table td {
+      padding: 14px 16px;
+      text-align: left;
+      font-size: 0.95rem;
+    }
+
+    table tbody tr:nth-child(even) {
+      background: #f9fafb;
+    }
+
+    table tbody tr:hover {
+      background: #f1f5f9;
+    }
+
+    /* Buttons */
+    button {
+      padding: 6px 14px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: 0.2s;
+    }
+
+    button.edit {
+      background: #3b82f6;
+      color: #fff;
+    }
+    button.edit:hover {
+      background: #2563eb;
+    }
+
+    button.delete {
+      background: #ef4444;
+      color: #fff;
+    }
+    button.delete:hover {
+      background: #dc2626;
+    }
+
+    /* Edit form modal */
+    #edit-form-container {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    #edit-form {
+      background: #fff;
+      padding: 25px;
+      border-radius: 12px;
+      width: 350px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    #edit-form h3 {
+      margin-bottom: 10px;
+      text-align: center;
+      color: #2563eb;
+    }
+
+    #edit-form input {
+      padding: 10px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 0.95rem;
+    }
+
+    #edit-form button {
+      margin-top: 10px;
+      padding: 10px;
+    }
+
+    #edit-form button[type="submit"] {
+      background: #2563eb;
+      color: #fff;
+    }
+    #edit-form button[type="submit"]:hover {
+      background: #1d4ed8;
+    }
+
+    #edit-form button[type="button"] {
+      background: #e5e7eb;
+    }
+    #edit-form button[type="button"]:hover {
+      background: #d1d5db;
+    }
+
+    @media (max-width: 600px) {
+      .sidebar {
+        position: fixed;
+        width: 100%;
+        height: auto;
+        display: flex;
+        justify-content: space-around;
+        padding: 10px;
+      }
+      .sidebar h3 {
+        display: none;
+      }
+      .sidebar ul {
+        display: flex;
+        gap: 10px;
+      }
+      .sidebar ul li {
+        margin: 0;
+      }
+      main {
+        margin: 80px 15px 20px 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <h3>Admin Panel</h3>
+    <ul>
+      <li><a href="dashboard.html">Dashboard</a></li>
+      <li><a href="add.html">Add</a></li>
+      <li><a href="user.html" class="active">User Details</a></li>
+      <li><a href="donated.html">Donated</a></li>
+      <li><a href="donations.html">Donations</a></li>
+      <li><a href="/logout">Logout</a></li>
+    </ul>
+  </aside>
+
+  <!-- Main content -->
+  <main>
+    <h2>Admins</h2>
+    <table id="admins-table">
+      <thead>
+        <tr><th>Name</th><th>Email</th><th>Phone</th><th>Address</th><th>Gov ID Number</th><th>Actions</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <h2>Donors</h2>
+    <table id="donors-table">
+      <thead>
+        <tr><th>Name</th><th>Email</th><th>Phone</th><th>Address</th><th>Gov ID Number</th><th>Actions</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <h2>Charities</h2>
+    <table id="charities-table">
+      <thead>
+        <tr><th>Name</th><th>Email</th><th>Phone</th><th>Address</th><th>Certificate / Gov ID Number</th><th>Actions</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </main>
+
+  <!-- Edit Modal -->
+  <div id="edit-form-container">
+    <form id="edit-form">
+      <h3>Edit User</h3>
+      <input type="text" name="name" placeholder="Name" required>
+      <input type="email" name="email" placeholder="Email" required>
+      <input type="text" name="phone" placeholder="Phone">
+      <input type="text" name="address" placeholder="Address">
+      <input type="text" name="certificate" placeholder="Certificate / Gov ID Number">
+      <button type="submit">Save</button>
+      <button type="button" onclick="closeEditForm()">Cancel</button>
+    </form>
+  </div>
+
+  <script>
+    let currentEditId = null;
+    let currentTableId = null;
+
+    async function loadTable(endpoint, tableId) {
+      try {
+        const res = await fetch(endpoint, { credentials: 'include' });
+        if (!res.ok) throw new Error('Failed to fetch');
+        const data = await res.json();
+        const tbody = document.querySelector(`#${tableId} tbody`);
+        tbody.innerHTML = '';
+
+        data.forEach(user => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${user.name || ''}</td>
+            <td>${user.email || ''}</td>
+            <td>${user.phone || ''}</td>
+            <td>${user.address || ''}</td>
+            <td>${user.certificate || ''}</td>
+            <td>
+              <button class="edit" onclick="openEditForm('${user._id}', '${tableId}', '${user.name}', '${user.email}', '${user.phone || ''}', '${user.address || ''}', '${user.certificate || ''}')">Edit</button>
+              <button class="delete" onclick="deleteUser('${user._id}')">Delete</button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } catch (err) {
+        console.error(err);
+        alert(`Failed to load ${tableId}`);
+      }
+    }
+
+    function openEditForm(id, tableId, name, email, phone, address, certificate) {
+      currentEditId = id;
+      currentTableId = tableId;
+      const form = document.getElementById('edit-form');
+      form.name.value = name;
+      form.email.value = email;
+      form.phone.value = phone;
+      form.address.value = address;
+      form.certificate.value = certificate;
+      document.getElementById('edit-form-container').style.display = 'flex';
+    }
+
+    function closeEditForm() {
+      document.getElementById('edit-form-container').style.display = 'none';
+      currentEditId = null;
+      currentTableId = null;
+    }
+
+    document.getElementById('edit-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const form = e.target;
+      const { name, email, phone, address, certificate } = form;
+      try {
+        const res = await fetch(`/api/users/${currentEditId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            name: name.value,
+            email: email.value,
+            phone: phone.value,
+            address: address.value,
+            certificate: certificate.value
+          })
+        });
+        const result = await res.json();
+        if(result.success) {
+          alert('User updated successfully');
+          loadAllTables();
+          closeEditForm();
+        } else {
+          alert(result.message || 'Error updating user');
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Error updating user');
+      }
+    });
+
+    async function deleteUser(id) {
+      if(!confirm('Are you sure you want to delete this user?')) return;
+      try {
+        const res = await fetch(`/api/users/${id}`, { method: 'DELETE', credentials: 'include' });
+        const result = await res.json();
+        if(result.success) {
+          alert('User deleted successfully');
+          loadAllTables();
+        } else {
+          alert(result.message || 'Error deleting user');
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Error deleting user');
+      }
+    }
+
+    function loadAllTables() {
+      loadTable('/api/admins', 'admins-table');
+      loadTable('/api/donors', 'donors-table');
+      loadTable('/api/charities', 'charities-table');
+    }
+
+    document.addEventListener('DOMContentLoaded', loadAllTables);
+  </script>
+</body>
+</html>

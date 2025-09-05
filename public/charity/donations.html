@@ -1,0 +1,288 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Charity Donations</title>
+<link rel="stylesheet" href="/css/style.css">
+<style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      display: flex;
+      min-height: 100vh;
+      background: #f1f5f9;
+      color: #333;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 250px;
+      background: linear-gradient(180deg, #1e3a8a, #3b82f6);
+      color: #fff;
+      padding: 20px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100vh;
+      box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+    }
+
+    .sidebar h3 {
+      margin-bottom: 40px;
+      font-size: 1.5rem;
+      text-align: center;
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
+
+    .sidebar ul {
+      list-style: none;
+    }
+
+    .sidebar ul li {
+      margin: 20px 0;
+    }
+
+    .sidebar ul li a {
+      text-decoration: none;
+      color: #cbd5e1;
+      font-size: 1rem;
+      display: block;
+      padding: 12px 15px;
+      border-radius: 10px;
+      transition: all 0.3s;
+    }
+
+    .sidebar ul li a:hover,
+    .sidebar ul li a.active {
+      background: rgba(255, 255, 255, 0.15);
+      color: #fff;
+      transform: translateX(6px);
+    }
+
+    /* Main content */
+    main {
+      margin-left: 270px;
+      padding: 40px;
+      flex: 1;
+    }
+
+    main h2 {
+      margin-bottom: 30px;
+      font-size: 2rem;
+      font-weight: 600;
+      color: #1e293b;
+    }
+
+    /* Dashboard cards */
+    .dashboard-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 25px;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(8px);
+      padding: 25px;
+      border-radius: 18px;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    }
+
+    .card h3 {
+      font-size: 1.2rem;
+      margin-bottom: 15px;
+      color: #2563eb;
+    }
+
+    .card p {
+      font-size: 2rem;
+      font-weight: bold;
+      color: #111827;
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        width: 200px;
+      }
+      main {
+        margin-left: 220px;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .sidebar {
+        position: fixed;
+        width: 100%;
+        height: auto;
+        display: flex;
+        justify-content: space-around;
+        padding: 10px;
+      }
+      .sidebar h3 {
+        display: none;
+      }
+      .sidebar ul {
+        display: flex;
+        gap: 10px;
+      }
+      .sidebar ul li {
+        margin: 0;
+      }
+      main {
+        margin: 80px 15px 20px 15px;
+      }
+    }
+  </style>
+</head>
+
+
+<body>
+
+<aside class="sidebar">
+  <h3>Charity Panel</h3>
+  <ul>
+    <li><a href="dashboard.html">Dashboard</a></li>
+    <li><a href="donations.html" class="active">Donations</a></li>
+    <li><a href="profile.html">Profile</a></li>
+    <li><a href="/logout">Logout</a></li>
+  </ul>
+</aside>
+
+<main>
+<h2>Donations</h2>
+
+<h3>Requested and Accepted Donations</h3>
+<table id="requested-table">
+  <thead>
+    <tr>
+      <th>Donor</th>
+      <th>Items</th>
+      <th>Quantity</th>
+      <th>Expiry Date</th>
+      <th>Status</th>
+      <th>Reason</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+<h3>Donated Donations</h3>
+<table id="donated-table">
+  <thead>
+    <tr>
+      <th>Donor</th>
+      <th>Items</th>
+      <th>Quantity</th>
+      <th>Expiry Date</th>
+      <th>Status</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+</main>
+
+<script>
+
+function formatDate(dateString) 
+{
+  if (!dateString) return '';
+  const d = new Date(dateString);
+  const day = String(d.getDate()).padStart(2, '0');
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const year = d.getFullYear();
+  return `${day}-${month}-${year}`; // ✅ DD-MM-YYYY
+}
+
+
+async function loadDonations() {
+  try {
+    const me = await fetch('/api/auth/me', { credentials:'include' }).then(r => r.json());
+    if(me.role !== 'charity') return alert('Unauthorized');
+
+    const res = await fetch('/api/donations', { credentials:'include' });
+    const donations = await res.json();
+
+    const requestedTbody = document.querySelector('#requested-table tbody');
+    const donatedTbody = document.querySelector('#donated-table tbody');
+    requestedTbody.innerHTML = '';
+    donatedTbody.innerHTML = '';
+
+    donations.forEach(d => {
+      // Only show donations relevant to this charity
+      if(d.charityId && d.charityId._id !== me._id) return;
+
+      // Requested Donations table: include Requested and Accepted
+      if(d.status === 'Requested' || d.status === 'Accepted') {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${d.donorName || d.donorId?.name || ''}</td>
+          <td>${d.items}</td>
+          <td>${d.quantity} ${d.unit || ''}</td>
+          <td>${formatDate(d.expiryDate)}</td>
+          <td>${d.status}</td>
+          <td>${d.status === 'Rejected' ? d.reason : ''}</td>
+        `;
+        requestedTbody.appendChild(tr);
+      }
+
+      // Donated Donations table
+      if(d.status === 'Donated'){
+        const actionTr = document.createElement('tr');
+        actionTr.innerHTML = `
+          <td>${d.donorName || d.donorId?.name || ''}</td>
+          <td>${d.items}</td>
+          <td>${d.quantity} ${d.unit || ''}</td>
+          <td>${formatDate(d.expiryDate)}</td>
+          <td>${d.status}</td>
+          <td><button onclick="requestDonation('${d._id}')">Request</button></td>
+        `;
+        donatedTbody.appendChild(actionTr);
+      }
+    });
+  } catch(err) {
+    console.error(err);
+    alert('Failed to load donations');
+  }
+}
+
+async function requestDonation(donationId){
+  try{
+    const res = await fetch(`/api/donations/${donationId}/request`, {
+      method: 'POST',
+      credentials: 'include'
+    });
+    const result = await res.json();
+    if(result.success){
+      alert('Donation requested successfully!');
+      loadDonations(); // reload table
+    } else {
+      alert(result.message || 'Failed to request donation');
+    }
+  } catch(err){
+    console.error(err);
+    alert('Error requesting donation');
+  }
+}
+
+document.addEventListener('DOMContentLoaded', loadDonations);
+</script>
+
+</body>
+</html>

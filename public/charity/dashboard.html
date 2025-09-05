@@ -1,0 +1,204 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Charity Dashboard</title>
+<link rel="stylesheet" href="/css/style.css">
+<style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      display: flex;
+      min-height: 100vh;
+      background: #f1f5f9;
+      color: #333;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 250px;
+      background: linear-gradient(180deg, #1e3a8a, #3b82f6);
+      color: #fff;
+      padding: 20px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100vh;
+      box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+    }
+
+    .sidebar h3 {
+      margin-bottom: 40px;
+      font-size: 1.5rem;
+      text-align: center;
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
+
+    .sidebar ul {
+      list-style: none;
+    }
+
+    .sidebar ul li {
+      margin: 20px 0;
+    }
+
+    .sidebar ul li a {
+      text-decoration: none;
+      color: #cbd5e1;
+      font-size: 1rem;
+      display: block;
+      padding: 12px 15px;
+      border-radius: 10px;
+      transition: all 0.3s;
+    }
+
+    .sidebar ul li a:hover,
+    .sidebar ul li a.active {
+      background: rgba(255, 255, 255, 0.15);
+      color: #fff;
+      transform: translateX(6px);
+    }
+
+    /* Main content */
+    main {
+      margin-left: 270px;
+      padding: 40px;
+      flex: 1;
+    }
+
+    main h2 {
+      margin-bottom: 30px;
+      font-size: 2rem;
+      font-weight: 600;
+      color: #1e293b;
+    }
+
+    /* Dashboard cards */
+    .dashboard-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 25px;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(8px);
+      padding: 25px;
+      border-radius: 18px;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    }
+
+    .card h3 {
+      font-size: 1.2rem;
+      margin-bottom: 15px;
+      color: #2563eb;
+    }
+
+    .card p {
+      font-size: 2rem;
+      font-weight: bold;
+      color: #111827;
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        width: 200px;
+      }
+      main {
+        margin-left: 220px;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .sidebar {
+        position: fixed;
+        width: 100%;
+        height: auto;
+        display: flex;
+        justify-content: space-around;
+        padding: 10px;
+      }
+      .sidebar h3 {
+        display: none;
+      }
+      .sidebar ul {
+        display: flex;
+        gap: 10px;
+      }
+      .sidebar ul li {
+        margin: 0;
+      }
+      main {
+        margin: 80px 15px 20px 15px;
+      }
+    }
+  </style>
+</head>
+
+
+<body>
+<aside class="sidebar">
+  <h3>Charity Panel</h3>
+  <ul>
+    <li><a href="dashboard.html" class="active">Dashboard</a></li>
+    <li><a href="donations.html">Donation Requests</a></li>
+    <li><a href="profile.html">Profile</a></li>
+    <li><a href="/logout">Logout</a></li>
+  </ul>
+</aside>
+
+<main>
+<h2>Welcome, Charity</h2>
+<div class="dashboard-cards">
+  <div class="card">
+    <h3>Total Requests</h3>
+    <p id="total-requests">0</p>
+  </div>
+  <div class="card">
+    <h3>Accepted</h3>
+    <p id="accepted-requests">0</p>
+  </div>
+  <div class="card">
+    <h3>Rejected</h3>
+    <p id="rejected-requests">0</p>
+  </div>
+</div>
+</main>
+
+<script>
+async function loadCharityDashboard() {
+  try {
+    const me = await fetch('/api/auth/me', { credentials:'include' }).then(r=>r.json());
+    const res = await fetch('/api/donations', { credentials:'include' });
+    const donations = await res.json();
+
+    const myDonations = donations.filter(d => d.charityId && d.charityId._id === me._id);
+    document.getElementById('total-requests').textContent = myDonations.length;
+    document.getElementById('accepted-requests').textContent = myDonations.filter(d=>d.status==='Accepted').length;
+    document.getElementById('rejected-requests').textContent = myDonations.filter(d=>d.status==='Rejected').length;
+  } catch(err){
+    console.error(err);
+    alert('Failed to load dashboard');
+  }
+}
+
+document.addEventListener('DOMContentLoaded', loadCharityDashboard);
+</script>
+</body>
+</html>
